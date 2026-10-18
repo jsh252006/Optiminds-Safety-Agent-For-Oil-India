@@ -1,0 +1,101 @@
+--- src/components/AdminPanel.tsx
++++ src/components/AdminPanel.tsx
+@@ -1,5 +1,5 @@
+ import React, { useState } from 'react';
+-import { Settings, Upload, CheckCircle2, Shield, AlertTriangle, MessageSquare, Trash2, Plus, Info } from 'lucide-react';
++import { Settings, Upload, CheckCircle2, Shield, AlertTriangle, MessageSquare, Trash2, Plus, Info, Loader2 } from 'lucide-react';
+ import { useData } from '../contexts/DataContext';
+ import { SafetyDocument, DocumentStatus } from '../types';
+ 
+@@ -17,21 +17,54 @@
+   const [docVersion, setDocVersion] = useState('');
+   const [docStatus, setDocStatus] = useState<DocumentStatus>('CURRENT');
+   const [docArea, setDocArea] = useState('');
++  const [docFile, setDocFile] = useState<File | null>(null);
++  const [isAnalyzing, setIsAnalyzing] = useState(false);
++  const [analyzeError, setAnalyzeError] = useState('');
+ 
+   // New Broadcast Form
+   const [broadcastMsg, setBroadcastMsg] = useState('');
+   const [broadcastType, setBroadcastType] = useState<'important' | 'emergency'>('important');
+ 
+   const currentCount = documents.filter(d => d.status === 'CURRENT').length;
+   const supersededCount = documents.filter(d => d.status === 'SUPERSEDED').length;
+ 
+   const handleAddDoc = async (e: React.FormEvent) => {
+     e.preventDefault();
++    setIsAnalyzing(true);
++    setAnalyzeError('');
++    
++    let aiAnalysis = undefined;
++    
++    if (docFile) {
++      try {
++        const formData = new FormData();
++        formData.append('document', docFile);
++        
++        const res = await fetch('/api/analyze-document', {
++          method: 'POST',
++          body: formData,
++        });
++        
++        if (!res.ok) {
++          const errData = await res.json();
++          throw new Error(errData.error || 'Failed to analyze document');
++        }
++        
++        aiAnalysis = await res.json();
++      } catch (err: any) {
++        console.error("Analysis Error:", err);
++        setAnalyzeError(err.message || 'Error running AI analysis. Proceeding without analysis.');
++        setIsAnalyzing(false);
++        return; // Don't proceed if it errors, let them see the error
++      }
++    }
++
+     await addDocument({
+       name: docName,
+       type: 'Standard',
+       organization: docOrganization,
+       standardNumber: docStandard,
+       version: docVersion,
+       publicationDate: new Date().toISOString().split('T')[0],
+       status: docStatus,
+       applicableArea: docArea.split(',').map(a => a.trim()).filter(Boolean),
++      ...(aiAnalysis ? { aiAnalysis } : {}),
+     });
+     setShowDocModal(false);
++    setIsAnalyzing(false);
+     // Reset
+-    setDocName(''); setDocStandard(''); setDocVersion(''); setDocArea('');
++    setDocName(''); setDocStandard(''); setDocVersion(''); setDocArea(''); setDocFile(null);
+   };
+ 
+   const handleAddBroadcast = async (e: React.FormEvent) => {
+@@ -252,10 +285,25 @@
+                 <label className="block text-sm font-semibold text-slate-700 mb-1">Applicable Areas (comma separated)</label>
+                 <input required type="text" value={docArea} onChange={e => setDocArea(e.target.value)} placeholder="PPE, Fire Safety, Hot Work" className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" />
+               </div>
++              
++              <div className="pt-2 border-t border-slate-100">
++                <label className="block text-sm font-semibold text-slate-700 mb-1">Upload Document for AI Analysis (Optional)</label>
++                <input type="file" accept=".txt,.pdf,.md,.csv" onChange={e => setDocFile(e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
++                <p className="text-[10px] text-slate-500 mt-1">If uploaded, AI will analyze hazards & precautions.</p>
++              </div>
++
++              {analyzeError && (
++                <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-100">
++                  {analyzeError}
++                </div>
++              )}
++
+               <div className="pt-4 flex gap-3 justify-end">
+                 <button type="button" onClick={() => setShowDocModal(false)} className="px-4 py-2 font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">Save Document</button>
++                <button type="submit" disabled={isAnalyzing} className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
++                  {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
++                  {isAnalyzing ? 'Analyzing with AI...' : 'Save Document'}
++                </button>
+               </div>
+             </form>
+           </div>

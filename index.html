@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OPTIMINDS Safety</title>
+    <script>
+      // Initialize theme instantly before DOM paint to prevent flash
+      try {
+        const savedTheme = localStorage.getItem('app-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark) || (savedTheme === 'system' && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+
+      // Prevent "Cannot set property fetch of #<Window> which has only a getter" 
+      // when third-party libraries (like polyfills) attempt to overwrite fetch in the preview iframe.
+      try {
+        const originalFetch = window.fetch;
+        if (originalFetch) {
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return originalFetch; },
+            set: function(val) {  },
+            configurable: true
+          });
+        }
+      } catch(e) {
+        console.warn('Could not define fetch setter:', e);
+      }
+    </script>
+    <meta name="description" content="Enterprise AI Safety Knowledge Base & RAG for Oil India Limited." />
+    <meta property="og:title" content="OPTIMINDS Safety" />
+    <meta property="og:description" content="Enterprise AI Safety Knowledge Base & RAG for Oil India Limited." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

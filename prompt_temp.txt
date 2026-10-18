@@ -1,0 +1,43 @@
+
+    const prompt = `You are an AI Safety Analyst for Oil India Limited (OIL).
+    Analyze the following incident report or hazard observation and generate a structured compliance and safety analysis.
+    Translate the output text into ${language}.
+    
+    Format your response as a JSON object with this EXACT structure:
+    {
+      "rulesChecked": 15,
+      "potentialIssues": 2,
+      "highPriorityIssues": 1,
+      "insufficientEvidence": 0,
+      "riskScore": 85, // A numerical risk score between 0 and 100 based on severity
+      "trendCategory": "Equipment Failure", // e.g. "PPE Non-compliance", "Process Deviation", "Fire Hazard"
+      "findings": [
+        {
+          "id": "F-001",
+          "finding": "Describe the safety finding",
+          "requirement": "Describe the breached or applicable safety requirement",
+          "source": "OISD-STD-114",
+          "severity": "HIGH", // or "MEDIUM" or "LOW"
+          "evidence": "Quote from the report",
+          "recommendedAction": "What to do next",
+          "confidenceLevel": "HIGH", // "HIGH", "MEDIUM", or "LOW"
+          "explainableMatch": {
+            "reportEvidence": "Quote from report",
+            "matchedConcepts": ["Hot Work", "PPE"],
+            "applicableTopic": "Fire Safety",
+            "source": "OISD-STD-114 Section 4.2"
+          }
+        }
+      ],
+      "ruleBasedPrecautions": [
+        {
+          "hazard": "Hazard name",
+          "precautions": ["Precaution 1", "Precaution 2"],
+          "source": "OISD-114"
+        }
+      ]
+    }
+
+    Incident Report Text:
+    """
+    ${reportText || "See attached file."}

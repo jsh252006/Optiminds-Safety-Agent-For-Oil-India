@@ -1,0 +1,28 @@
+{
+  "project_id": "gleaming-text-mghtt",
+  "collections": [
+    {
+      "name": "users",
+      "description": "User profiles",
+      "fields": [
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp"
+        }
+      ],
+      "rules": [
+        {
+          "condition": "isOwner(resource, request.auth.uid)",
+          "actions": [
+            "read",
+            "write"
+          ]
+        }
+      ]
+    }
+  ]
+}

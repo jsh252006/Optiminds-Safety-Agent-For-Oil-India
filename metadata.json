@@ -1,0 +1,6 @@
+{
+  "name": "OPTIMINDS Safety",
+  "description": "Enterprise AI Safety Knowledge Base & RAG for Oil India Limited, featuring rule-aware report analysis and safety Q&A.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
